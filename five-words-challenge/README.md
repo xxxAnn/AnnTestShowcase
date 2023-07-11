@@ -1,0 +1,1 @@
+My attempt at Stand-up Math's 5 words programming challenge. Couldn't get it to work. :(
