@@ -14,7 +14,7 @@ class Layer:
 
     def propagate_forward(self, a: np.ndarray) -> np.ndarray:
         res = self.func(self.weights.dot(a) + self.biases)
-        print(f"Propagating: {res}")
+        #//print(f"Propagating: {res}")
         return res
 
 class Network:
