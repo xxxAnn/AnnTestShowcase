@@ -10,33 +10,107 @@ fn nlic(a: &Node, b: &Node) -> bool {
 }
 
 
+impl Node {
+    fn next(&mut self) -> Option<&mut Box<Node>> {
+        self.next.as_mut()
+    }
+
+    fn set_next(&mut self, u: u32) {
+        self.next = Some(Box::new(Node::new(u)));
+    }
+
+    fn push(&mut self, u: u32) {
+        match self.next() {
+            Some(n) => n.push(u),
+            None => self.set_next(u)
+        }
+    }
+
+    fn len(&self) -> usize {
+        match &self.next {
+            Some(n) => n.len() + 1,
+            None => 1
+        }
+    }
+}
+
+impl Head {
+    fn next(&mut self) -> Option<&mut Node> {
+        self.next.as_mut()
+    }
+
+    fn set_next(&mut self, u: u32) {
+        self.next = Some(Node::new(u));
+    }
+
+    fn push(&mut self, u: u32) {
+        self.total += u;
+        match self.next() {
+            Some(n) => n.push(u),
+            None => self.set_next(u)
+        }
+    }
+
+    fn fits(&self, u: u32) -> bool {
+        (self.total & u) == 0
+    }
+
+    fn len(&self) -> usize {
+        match &self.next {
+            Some(n) => n.len(),
+            None => 0
+        }
+    }
+}
+
+struct Head {
+    total: u32,
+    next: Option<Node>
+}
+
+
 struct Node {
     num: u32,
-    links: Vec<u32>
+    next: Option<Box<Node>>
 }
 
 impl Node {
-    pub fn new(num: u32) -> Self {
-        Self { num, links: Vec::new() }
+    fn new(num: u32) -> Self {
+        Self { num, next: None }
+    }
+}
+
+impl Head {
+    fn new(num: u32) -> Self {
+        let mut s = Self {
+            total: 0,
+            next: None
+        };
+        s.push(num);
+        s
     }
 }
 
 fn main() {
-    let mut nodes = Vec::new();
+    let mut heads: Vec<Head> = Vec::new();
+    let mut i = 0;
     for word in std::fs::read_to_string("words.txt").unwrap().lines() {
-        let mut nnode = Node::new(to_byte(word));
-        for onode in nodes.iter_mut() {
-            if nlic(onode, &nnode) {
-                onode.links.push(nnode.num);
-                nnode.links.push(onode.num);
+        println!("{word}{}", word.chars().count());
+        if word.chars().count() == 5 {
+            let wrd = to_byte(word);
+            for head in heads.iter_mut() {
+                if head.fits(wrd) {
+                    head.push(wrd);
+                }
             }
+            heads.push(Head::new(wrd));
+            i+=1;
         }
-        nodes.push(nnode);
     }
-    for node in nodes {
-        println!("{}", node.links.len());
-        if node.links.len() == 3 {
-            println!("{}; {:?}", node.num, &node.links);
+
+    for head in heads {
+        if head.len() == 5 {
+            println!("{}", head.total)
         }
     }
 }
