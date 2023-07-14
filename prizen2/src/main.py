@@ -1,6 +1,7 @@
 import numpy as np
 import typing
-import math
+
+import activation as activation
 
 class Layer: 
     weights: np.ndarray
@@ -25,7 +26,14 @@ class Network:
         for (i, el) in enumerate(sizes[:-1]):
             current_size = el
             next_size = sizes[i+1]
-            layers.append(Layer(factor, current_size, next_size, get(funcs, i)))
+            layers.append(
+                Layer(
+                    factor, 
+                    current_size, 
+                    next_size, 
+                    (funcs[i] if i < len(funcs) else None) or activation.default
+                )
+            )
         self.layers = layers
 
     def model(self, a: np.ndarray):
@@ -33,20 +41,8 @@ class Network:
             a = layer.propagate_forward(a)
         return a
     
-def get(funcs, i, default=None):
-    if i < len(funcs):
-        res = funcs[i]
-    else:
-        res = default
 
-    if res is None: res = lambda x: x
 
-    return res
-    
-    
-def sigmoid(x: float) -> float:
-    return 1/(1+np.exp(-x))
-
-n = Network([3, 12, 8, 3], funcs=[sigmoid] * 4)
+n = Network([3, 12, 8, 3], funcs=[activation.sigmoid] * 4)
 a = n.model(np.array([-100, -100, -100]))
 print(a)
